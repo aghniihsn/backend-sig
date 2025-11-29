@@ -1,11 +1,11 @@
-// backend/server.js (Kode Lengkap yang Diperbaiki)
+// backend/server.js (Kode Lengkap)
 
 require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
-const cors = require('cors'); // ✨ PERBAIKAN: Seharusnya require('cors')
+const cors = require('cors'); 
 
 const app = express();
 const PORT = process.env.PORT || 5000; 
@@ -25,9 +25,27 @@ const LocationSchema = new mongoose.Schema({
 
 const Location = mongoose.model('Location', LocationSchema);
 
+// --- Konfigurasi CORS ---
+const allowedOrigins = [
+    'https://rizqiiqmal.github.io', 
+    'http://localhost:5500',         
+];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+};
+
 // Middleware
 app.use(express.json()); 
-app.use(cors()); // Middleware CORS
+app.use(cors(corsOptions)); // Terapkan CORS dengan opsi yang disesuaikan
 
 // --- 2. Endpoint API (Back-End) ---
 
@@ -62,16 +80,15 @@ app.delete('/api/locations/:id', async (req, res) => {
         }
         res.status(200).json({ message: 'Location deleted successfully' });
     } catch (err) {
-        // Jika ID tidak valid, Mongoose akan menangani dan kita kirim error 500
         res.status(500).json({ message: 'Error deleting location (Invalid ID format)', error: err.message });
     }
 });
 
 
 // --- 3. Melayani Front-End (Static Files) ---
+// *Note: Bagian ini hanya diperlukan jika Anda menjalankan server.js secara lokal*
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-// Endpoint root akan melayani index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
